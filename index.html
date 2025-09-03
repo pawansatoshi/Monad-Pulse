@@ -1,0 +1,271 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Monad Pulse Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+  <style>
+    :root{
+      --bg:#07070b;
+      --card:#0f1015;
+      --muted:#c7c7d1;
+      --accent1:#ff7b00;
+      --accent2:#9b00ff;
+      --glass: rgba(255,255,255,0.03);
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      background:linear-gradient(180deg,#04040a 0%, #0a0a0f 100%);
+      color:var(--muted); -webkit-font-smoothing:antialiased;
+      padding:18px;
+      display:flex; align-items:center; justify-content:center; min-height:100vh;
+    }
+    .container{width:100%; max-width:980px; margin:0 auto;}
+    .topbar{
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+      margin-bottom:18px;
+    }
+    .brand{display:flex; gap:12px; align-items:center;}
+    .brand img{height:64px; width:64px; object-fit:contain; border-radius:8px; box-shadow:0 6px 18px rgba(155,0,255,0.06); background:var(--glass); padding:6px;}
+    h1{margin:0; font-size:20px; color:var(--accent1); text-shadow:0 0 8px rgba(255,123,0,0.12);}
+    .controls{display:flex; gap:10px; align-items:center;}
+    button.connect{
+      background:linear-gradient(90deg,var(--accent1),var(--accent2));
+      color:white; border:none; padding:10px 14px; border-radius:10px; cursor:pointer;
+      box-shadow:0 6px 22px rgba(155,0,255,0.12);
+      font-weight:600;
+    }
+    button.connect[disabled]{opacity:0.6; cursor:not-allowed;}
+
+    .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:18px; align-items:start;}
+
+    .card{background:var(--card); border-radius:var(--radius); padding:16px; box-shadow:0 6px 24px rgba(0,0,0,0.6), 0 0 20px rgba(155,0,255,0.03); border:1px solid rgba(255,255,255,0.03);}
+
+    .card h2{margin:0 0 10px 0; color:#fff; font-size:16px;}
+    input[type=text]{width:100%; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.04); background:transparent; color:var(--muted); outline:none;}
+
+    .small{font-size:13px; color:#bfc0cc;}
+    .data{margin-top:10px; font-size:14px; text-align:left; color:var(--muted); line-height:1.4; max-height:220px; overflow:auto; padding-right:6px;}
+
+    .tx-btn{background:transparent; border:1px solid rgba(255,255,255,0.06); padding:10px 12px; color:var(--muted); border-radius:10px; cursor:pointer; font-weight:600;}
+    .tx-btn:disabled{opacity:0.5; cursor:not-allowed;}
+
+    .toggle{display:flex; gap:8px; align-items:center;}
+    label.switch{position:relative; display:inline-block; width:44px; height:24px;}
+    label.switch input{display:none;}
+    .slider{position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:#333; transition:.2s; border-radius:12px;}
+    .slider:before{position:absolute; content:""; height:18px; width:18px; left:3px; top:3px; background:white; border-radius:50%; transition:.2s;}
+    label.switch input:checked + .slider{background:linear-gradient(90deg,var(--accent1),var(--accent2));}
+    label.switch input:checked + .slider:before{transform:translateX(20px);}
+
+    footer{margin-top:18px; text-align:center; color:#8f8f9b; font-size:13px;}
+
+    /* responsive */
+    @media (max-width:520px){
+      .brand img{height:48px; width:48px;}
+      h1{font-size:16px;}
+      body{padding:12px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">
+        <img src="monad_logo.png" alt="Monad logo" id="monadLogo">
+        <img src="fox_logo.png" alt="Fox logo" id="foxLogo">
+        <div>
+          <h1>Monad Pulse Dashboard</h1>
+          <div class="small">Simple Testnet tools • Wallet tracker • Gas visualizer • Tx stopwatch</div>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="toggle small">
+          <span style="margin-right:6px;">Auto-refresh</span>
+          <label class="switch">
+            <input type="checkbox" id="autoRefresh" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <button id="connectBtn" class="connect">Connect Wallet</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card" style="min-height:170px;">
+        <h2>Wallet Tracker</h2>
+        <div class="small">Paste an address or use your connected wallet</div>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <input id="addrInput" type="text" placeholder="0x..." />
+          <button id="checkBtn" class="tx-btn">Check</button>
+        </div>
+        <div id="walletData" class="data">Balance and recent history will appear here.</div>
+      </div>
+
+      <div class="card" style="min-height:170px;">
+        <h2>Gas Fee Visualizer</h2>
+        <div class="small">Live block base fee & utilization</div>
+        <div style="display:flex; gap:8px; margin-top:10px; align-items:center;">
+          <button id="gasBtn" class="tx-btn">Refresh Gas</button>
+          <div class="small" style="margin-left:auto;">Chain: Testnet</div>
+        </div>
+        <div id="gasData" class="data">Latest gas info will appear here.</div>
+      </div>
+
+      <div class="card" style="min-height:170px;">
+        <h2>Tx Speed Stopwatch</h2>
+        <div class="small">Sends a tiny 0-value tx from your wallet and measures confirmation time.</div>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button id="txBtn" class="tx-btn">Send Test Tx</button>
+          <div style="margin-left:auto;" class="small">Note: requires MetaMask + Test MON</div>
+        </div>
+        <div id="txResult" class="data">Result/elapsed time will show here.</div>
+      </div>
+    </div>
+
+    <footer>Built on Monad Testnet 🦊 • <span id="status">Ready</span></footer>
+  </div>
+
+<script>
+  const RPC = "https://testnet-rpc.monad.xyz";
+  const provider = new ethers.providers.JsonRpcProvider(RPC);
+  let web3Provider = null;
+  let signer = null;
+  let connectedAddr = null;
+  let autoInterval = null;
+
+  const connectBtn = document.getElementById("connectBtn");
+  const addrInput = document.getElementById("addrInput");
+  const checkBtn = document.getElementById("checkBtn");
+  const walletData = document.getElementById("walletData");
+  const gasBtn = document.getElementById("gasBtn");
+  const gasData = document.getElementById("gasData");
+  const txBtn = document.getElementById("txBtn");
+  const txResult = document.getElementById("txResult");
+  const autoRefresh = document.getElementById("autoRefresh");
+  const statusSpan = document.getElementById("status");
+
+  async function safeCall(fn, onErrorMsg){
+    try{ return await fn(); }
+    catch(e){ console.error(e); statusSpan.innerText = onErrorMsg || "RPC Error"; throw e; }
+  }
+
+  async function connectWallet(){
+    if(window.ethereum){
+      try{
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+        signer = web3Provider.getSigner();
+        connectedAddr = await signer.getAddress();
+        connectBtn.innerText = connectedAddr.slice(0,6) + "..." + connectedAddr.slice(-4);
+        connectBtn.disabled = true;
+        addrInput.value = connectedAddr;
+        statusSpan.innerText = "Wallet connected";
+        refreshAll(); // immediate refresh
+      }catch(e){ alert("Wallet connection failed"); console.error(e); }
+    } else {
+      alert("Install MetaMask or an EIP-1193 provider to connect.");
+    }
+  }
+
+  async function getBalance(addr){
+    const b = await safeCall(()=>provider.getBalance(addr),"Failed to fetch balance");
+    return ethers.utils.formatEther(b);
+  }
+
+  async function getHistory(addr){
+    // try provider.getHistory; not all RPCs support it
+    try{
+      const hist = await provider.getHistory(addr, -10000, "latest");
+      return hist.slice(-10).reverse();
+    }catch(e){
+      return null;
+    }
+  }
+
+  async function checkWallet(){
+    const addr = addrInput.value.trim();
+    if(!ethers.utils.isAddress(addr)){ alert("Invalid address"); return; }
+    walletData.innerHTML = "<i>Loading...</i>";
+    try{
+      const bal = await getBalance(addr);
+      walletData.innerHTML = `<b>Balance:</b> ${bal} MON<br/>`;
+      const hist = await getHistory(addr);
+      if(hist && hist.length){
+        let list = "<b>Last txs:</b><br/>";
+        hist.forEach(tx=>{
+          const to = tx.to ? tx.to : "(contract)";
+          list += `${new Date(tx.timestamp*1000).toLocaleString()} • ${tx.hash.slice(0,10)}... → ${to}<br/>`;
+        });
+        walletData.innerHTML += "<br/>" + list;
+      } else {
+        walletData.innerHTML += "<br/>(Tx history not available via this RPC)";
+      }
+    }catch(e){
+      walletData.innerHTML = "Error fetching wallet data";
+    }
+  }
+
+  async function refreshGas(){
+    gasData.innerHTML = "<i>Loading...</i>";
+    try{
+      const block = await safeCall(()=>provider.getBlock("latest"),"Failed to fetch block");
+      const baseFee = block.baseFeePerGas ? ethers.utils.formatUnits(block.baseFeePerGas,"gwei") : "N/A";
+      gasData.innerHTML = `<b>Base Fee:</b> ${baseFee} gwei<br/><b>Block:</b> ${block.number}<br/><b>Gas Used:</b> ${block.gasUsed.toString()} / ${block.gasLimit.toString()}`;
+    }catch(e){
+      gasData.innerHTML = "Error fetching gas data";
+    }
+  }
+
+  async function sendTestTx(){
+    if(!window.ethereum){ alert("Connect MetaMask!"); return; }
+    try{
+      txResult.innerHTML = "Preparing tx...";
+      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+      const providerWeb3 = new ethers.providers.Web3Provider(window.ethereum);
+      const signerLocal = providerWeb3.getSigner();
+      const from = accounts[0];
+
+      txBtn.disabled = true;
+      const start = Date.now();
+      const tx = await signerLocal.sendTransaction({ to: from, value: 0 });
+      txResult.innerHTML = "Tx sent, waiting for confirmation...";
+      await tx.wait();
+      const elapsed = ((Date.now()-start)/1000).toFixed(2);
+      txResult.innerHTML = `✅ Confirmed in ${elapsed}s<br/>Hash: ${tx.hash}`;
+    }catch(e){
+      console.error(e);
+      txResult.innerHTML = "❌ Tx error: " + (e.message || e);
+    } finally {
+      txBtn.disabled = false;
+    }
+  }
+
+  function startAutoRefresh(){
+    if(autoInterval) clearInterval(autoInterval);
+    if(autoRefresh.checked){
+      autoInterval = setInterval(()=>{ try{ if(addrInput.value) checkWallet(); refreshGas(); }catch(e){} },10000);
+    }
+  }
+
+  // events
+  connectBtn.addEventListener("click", connectWallet);
+  checkBtn.addEventListener("click", checkWallet);
+  gasBtn.addEventListener("click", refreshGas);
+  txBtn.addEventListener("click", sendTestTx);
+  autoRefresh.addEventListener("change", startAutoRefresh);
+
+  // initial load
+  (async function init(){
+    try{
+      await refreshGas();
+      startAutoRefresh();
+    }catch(e){ console.error(e); }
+  })();
+</script>
+</body>
+</html>
