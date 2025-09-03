@@ -1,139 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🔥 Monad Pulse Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<style>
-body { margin:0; font-family:'Inter',sans-serif; background-color:#0d0d0d; color:#fff; overflow-x:hidden;}
-header { display:flex; justify-content:space-between; align-items:center; margin:40px 20px; flex-wrap:wrap; gap:20px;}
-header img { height:70px; border-radius:12px; filter:drop-shadow(0 0 10px #836EF9); transition:0.3s;}
-header img:hover{ transform:scale(1.15) rotate(-2deg); filter:drop-shadow(0 0 20px #A0055D);}
-h1 { text-align:center; color:#836EF9; font-size:52px; margin-bottom:50px; text-shadow:0 0 15px #A0055D;}
-.wallet-section { text-align:center; margin-bottom:30px;}
-.wallet-section button{ background:linear-gradient(45deg,#836EF9,#A0055D); color:#fff; border:none; padding:12px 28px; border-radius:12px; cursor:pointer; font-size:18px; box-shadow:0 0 15px rgba(131,110,249,0.6); transition:0.3s; margin-right:10px;}
-.wallet-section button:hover{ transform:scale(1.05); box-shadow:0 0 25px rgba(160,5,93,0.8);}
-#manualWallet { padding:8px; border-radius:8px; border:none; width:250px; font-size:16px;}
-#walletAddress { margin-top:15px; font-weight:bold; font-size:18px;}
-.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:25px; margin-bottom:50px;}
-.card { background:#1a1a1a; padding:25px; border-radius:16px; box-shadow:0 0 20px rgba(131,110,249,0.2); transition:0.3s;}
-.card h2 { color:#836EF9; text-shadow:0 0 6px #836EF9; margin-top:0; margin-bottom:15px;}
-.card button{ background:linear-gradient(45deg,#836EF9,#A0055D); color:#fff; border:none; padding:8px 20px; border-radius:10px; cursor:pointer; box-shadow:0 0 10px rgba(131,110,249,0.5); transition:0.3s;}
-.card button:hover{ transform:scale(1.05); box-shadow:0 0 25px rgba(160,5,93,0.7);}
-.card:hover{ transform:translateY(-5px); box-shadow:0 0 30px rgba(131,110,249,0.4);}
-table { width:100%; border-collapse:collapse; margin-top:10px;}
-th, td { border:1px solid #333; padding:10px; text-align:center;}
-th { background:#222;}
-.channels { text-align:center; margin-top:30px;}
-.channels a { display:inline-block; margin:5px 15px; padding:12px 24px; background:linear-gradient(45deg,#836EF9,#A0055D); color:#fff; border-radius:12px; font-weight:bold; box-shadow:0 0 15px rgba(131,110,249,0.5); transition:0.3s; text-decoration:none;}
-.channels a:hover{ transform:scale(1.05); box-shadow:0 0 25px rgba(160,5,93,0.8);}
-footer { margin-top:50px; font-size:14px; opacity:0.8; text-align:center;}
-@keyframes txHighlight { 0% {background-color:#836EF9;color:#fff;} 100% {background-color:#1a1a1a;color:#fff;} }
-.tx-new { animation: txHighlight 2s ease; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔥 Monad Pulse Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* Your CSS styles here */
+  </style>
 </head>
 <body>
 
-<header>
-  <a href="https://x.com/pawansatoshix" target="_blank"><img src="fox_logo.png" alt="Fox Logo"></a>
-  <a href="https://monad.xyz" target="_blank"><img src="monad_logo.png" alt="Monad Logo"></a>
-</header>
+  <header>
+    <a href="https://x.com/pawansatoshix" target="_blank"><img src="fox_logo.png" alt="Fox Logo"></a>
+    <a href="https://monad.xyz" target="_blank"><img src="monad_logo.png" alt="Monad Logo"></a>
+  </header>
 
-<h1>🔥 Monad Pulse 🦊</h1>
+  <h1>🔥 Monad Pulse 🦊</h1>
 
-<div class="wallet-section">
-  <button onclick="connectWallet()">Connect Wallet</button>
-  <input type="text" id="manualWallet" placeholder="Enter wallet address"/>
-  <button onclick="fetchManualWallet()">Search Wallet</button>
-  <p id="walletAddress">-</p>
-</div>
-
-<div class="grid">
-  <div class="card">
-    <h2>Wallet Tracker</h2>
-    <p id="walletBalance">Balance: -</p>
-    <p id="txCount">Tx Count: -</p>
+  <div class="wallet-section">
+    <button onclick="connectWallet()">Connect Wallet</button>
+    <input type="text" id="manualWallet" placeholder="Enter wallet address"/>
+    <button onclick="fetchManualWallet()">Search Wallet</button>
+    <p id="walletAddress">-</p>
   </div>
 
-  <div class="card">
-    <h2>Recent Transactions</h2>
-    <div id="recentTxs">-</div>
+  <div class="grid">
+    <div class="card">
+      <h2>Wallet Tracker</h2>
+      <p id="walletBalance">Balance: -</p>
+      <p id="txCount">Tx Count: -</p>
+    </div>
+
+    <div class="card">
+      <h2>Recent Transactions</h2>
+      <div id="recentTxs">-</div>
+    </div>
+
+    <div class="card">
+      <h2>Gas Fee Visualizer</h2>
+      <button onclick="fetchGasData()">Refresh Gas</button>
+      <p id="gasInfo">-</p>
+    </div>
   </div>
 
-  <div class="card">
-    <h2>Gas Fee Visualizer</h2>
-    <button onclick="fetchGasData()">Refresh Gas</button>
-    <p id="gasInfo">-</p>
+  <div class="channels">
+    <a href="https://t.me/pawansatoshiji" target="_blank">Telegram</a>
+    <a href="https://youtube.com/@PawanSatoshi" target="_blank">YouTube</a>
+    <a href="https://x.com/pawansatoshix" target="_blank">X / Twitter</a>
+    <a href="https://discord.gg/monad" target="_blank">@pawansatoshi<br>(Discord)</a>
   </div>
-</div>
 
-<div class="card">
-  <h2>Leaderboard (Demo)</h2>
-  <table>
-    <tr><th>Rank</th><th>Wallet</th><th>Tx Count</th></tr>
-    <tr><td>1</td><td>0xYourWallet...</td><td id="leaderTx">-</td></tr>
-    <tr><td>2</td><td>0xFriend123...</td><td>42</td></tr>
-    <tr><td>3</td><td>0xDemo456...</td><td>27</td></tr>
-  </table>
-</div>
+  <footer>Built with ❤️ on Monad Testnet | Contact: @pawansatoshi</footer>
 
-<div class="channels">
-  <a href="https://t.me/pawansatoshiji" target="_blank">Telegram</a>
-  <a href="https://youtube.com/@PawanSatoshi" target="_blank">YouTube</a>
-  <a href="https://x.com/pawansatoshix" target="_blank">X / Twitter</a>
-  <a href="https://discord.gg/monad" target="_blank">@pawansatoshi<br>(Discord)</a>
-</div>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.8.1/dist/ethers.min.js"></script>
+  <script>
+    let account;
+    let refreshTimer;
+    let lastTxs = [];
+    const ANKR_RPC = "https://rpc.ankr.com/monad_testnet"; // Free unlimited Ankr RPC
+    const provider = new ethers.JsonRpcProvider(ANKR_RPC);
 
-<footer>Built with ❤️ on Monad Testnet | Contact: @pawansatoshi</footer>
+    async function connectWallet() {
+      if (!window.ethereum) {
+        alert("MetaMask not detected!");
+        return;
+      }
+      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+      if (accounts.length === 0) {
+        alert("No account found!");
+        return;
+      }
+      account = accounts[0];
+      document.getElementById("walletAddress").innerText = "Connected: " + account;
+      await fetchWalletData(account);
+      startAutoRefresh(account);
+      window.ethereum.on("accountsChanged", (accounts) => {
+        if (accounts.length === 0) {
+          account = null;
+          document.getElementById("walletAddress").innerText = "-";
+        } else {
+          account = accounts[0];
+          document.getElementById("walletAddress").innerText = "Connected: " + account;
+          fetchWalletData(account);
+        }
+      });
+    }
 
-<script src="https://cdn.jsdelivr.net/npm/ethers@6.8.1/dist/ethers.min.js"></script>
-<script>
-let account;
-let refreshTimer;
-let lastTxs=[];
-const ANKR_RPC = "https://rpc.ankr.com/monad_testnet"; // Free unlimited Ankr RPC
-const provider = new ethers.JsonRpcProvider(ANKR_RPC);
+    async function fetchManualWallet() {
+      const manualAddress = document.getElementById("manualWallet").value.trim();
+      if (!manualAddress) {
+        alert("Enter a valid wallet address!");
+        return;
+      }
+      account = manualAddress;
+      document.getElementById("walletAddress").innerText = "Manual: " + account;
+      await fetchWalletData(account);
+      startAutoRefresh(account);
+    }
 
-async function connectWallet(){
-  if(!window.ethereum){ alert("MetaMask not detected!"); return; }
-  const accounts = await window.ethereum.request({ method:"eth_requestAccounts" });
-  if(accounts.length===0){ alert("No account found!"); return; }
-  account = accounts[0];
-  document.getElementById("walletAddress").innerText="Connected: "+account;
-  await fetchWalletData(account);
-  startAutoRefresh(account);
-  window.ethereum.on("accountsChanged",(accounts)=>{
-    if(accounts.length===0){ account=null; document.getElementById("walletAddress").innerText="-"; }
-    else { account=accounts[0]; document.getElementById("walletAddress").innerText="Connected: "+account; fetchWalletData(account); }
-  });
-}
+    function startAutoRefresh(addr) {
+      if (refreshTimer) clearInterval(refreshTimer);
+      refreshTimer = setInterval(async () => {
+        await fetchWalletData(addr);
+        await fetchGasData();
+      }, 15000);
+    }
 
-async function fetchManualWallet(){
-  const manualAddress = document.getElementById("manualWallet").value.trim();
-  if(!manualAddress){ alert("Enter a valid wallet address!"); return; }
-  account = manualAddress;
-  document.getElementById("walletAddress").innerText="Manual: "+account;
-  await fetchWalletData(account);
-  startAutoRefresh(account);
-}
+    async function fetchWalletData(address) {
+      try {
+        const balance = await provider.getBalance(address);
+        const txCount = await provider.getTransactionCount(address);
+        document.getElementById("walletBalance").innerText = "Balance: " + ethers.formatEther(balance).slice(0, 8) + " MON";
+        document.getElementById("txCount").innerText = "Tx Count: " + txCount;
 
-function startAutoRefresh(addr){
-  if(refreshTimer) clearInterval(refreshTimer);
-  refreshTimer=setInterval(async()=>{ await fetchWalletData(addr); await fetchGasData(); },15000);
-}
+        const blockNumber = await provider.getBlockNumber();
+        const txs = [];
+        for (let i = blockNumber; i > blockNumber - 100 && txs.length < 5; i--) {
+          const block = await provider.getBlockWithTransactions(i);
+          block.transactions.forEach(tx => {
+            if (tx.from.toLowerCase() === address.toLowerCase() || tx.to?.toLowerCase() === address.toLowerCase()) {
+              txs.push(tx);
+            }
+          });
+        }
 
-async function fetchWalletData(address){
-  try{
-    const balance = await provider.getBalance(address);
-    const txCount = await provider.getTransactionCount(address);
-    document.getElementById("walletBalance").innerText="Balance: "+ethers.formatEther(balance).slice(0,8)+" MON";
-    document.getElementById("txCount").innerText="Tx Count: "+txCount;
-    document.getElementById("leaderTx").innerText=txCount;
+        const recentTxsContainer = document.getElementById("recentTxs");
+        recentTxsContainer.innerHTML = "";
+        txs.forEach(tx => {
+          const txElement = document.createElement("div");
+          txElement.classList.add("tx");
+          txElement.innerHTML = `
+            <p><strong>Hash:</strong> <a href="https://testnet.explorer.monad.xyz/tx/${tx.hash}" target="_blank">${tx.hash}</a></p>
+            <p><strong>From:</strong> ${tx.from}</p>
+            <p><strong>To:</strong> ${tx.to}</p>
+            <p><strong>Value:</strong> ${ethers.formatEther(tx.value).slice(0, 8)} MON</p>
+          `;
+          recentTxsContainer.appendChild(txElement);
+        });
 
-    const blockNumber = await provider.getBlockNumber();
-    const txs = [];
-    for(let i=blockNumber; i>blockNumber-100 && txs.length<5; i--){
-      const block = await provider.getBlockWithTransactions(i);
-      block.transactions.forEach(tx=>{
-        if(tx.from.toLowerCase()===address.toLowerCase() ||
+        if (txs.length > 0) {
+          const newTxs = txs.filter(tx => !lastTxs.some(lastTx => lastTx.hash === tx.hash));
+          newTxs.forEach(tx => {
+            const txElement = document.createElement("div");
+            txElement.classList.add("tx", "tx-new");
+            txElement.innerHTML = `
+              <p><strong>New Tx!</strong> <a href="https://testnet.explorer.monad.xyz/tx/${tx.hash}" target="_blank">${tx.hash}</a></p>
+            `;
+            recentTxsContainer.insertBefore(txElement, recentTxsContainer.firstChild);
+          });
+          lastTxs = txs;
+        }
+      } catch (error) {
+        console.error("Error fetching wallet data:", error);
+      }
+    }
+
+    async function fetchGasData() {
+      try {
+        const gasPrice = await provider.getGasPrice();
+        const gasInfo = document.getElementById("gasInfo");
+        gasInfo.innerText = "Gas Price: " + ethers.formatUnits(gasPrice, "gwei") + " Gwei";
+      } catch (error) {
+        console.error("Error fetching gas data:", error);
+      }
+    }
+  </script>
+</body>
+  </html>
