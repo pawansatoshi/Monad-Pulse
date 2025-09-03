@@ -1,145 +1,274 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Monad Pulse Dashboard</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0d0d0d;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
-    }
-    header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    h1 {
-      margin: 0;
-      font-size: 22px;
-      color: #ff6f00;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-      width: 100%;
-      max-width: 1000px;
-    }
-    .card {
-      background: #1a1a1a;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(255,255,255,0.05);
-    }
-    button {
-      background: #ff6f00;
-      color: #fff;
-      border: none;
-      padding: 8px 16px;
-      margin-top: 10px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #ff8800;
-    }
-    footer {
-      margin-top: 40px;
-      font-size: 14px;
-      opacity: 0.7;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔥 Monad Pulse Tracker</title>
+<style>
+/* Body & Background */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #0d0d0d;
+  color: #fff;
+  overflow-x: hidden;
+}
+canvas#particles {
+  position: fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  z-index: -1;
+}
+
+/* Fade-in Animation */
+.fade-in {
+  animation: fadeIn 1s ease-in-out;
+}
+@keyframes fadeIn {
+  0% { opacity:0; transform: translateY(20px); }
+  100% { opacity:1; transform: translateY(0); }
+}
+
+/* Header Logos */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 40px 20px 50px 20px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+header img {
+  height: 70px;
+  transition: transform 0.3s, filter 0.3s;
+  filter: drop-shadow(0 0 10px #ff6f00);
+  border-radius: 12px;
+}
+header img:hover {
+  transform: scale(1.15) rotate(-2deg);
+  filter: drop-shadow(0 0 20px #ff8800);
+}
+
+/* Headline */
+h1 {
+  text-align: center;
+  color: #ff6f00;
+  font-size: 52px;
+  margin-bottom: 50px;
+  text-shadow: 0 0 15px #ff6f00;
+}
+
+/* Wallet Section */
+.wallet-section {
+  text-align: center;
+  margin-bottom: 50px;
+}
+.wallet-section button {
+  background: linear-gradient(45deg,#ff6f00,#ff8800);
+  color: #fff;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.3s;
+  box-shadow:0 0 15px rgba(255,111,0,0.6);
+}
+.wallet-section button:hover {
+  transform: scale(1.05);
+  box-shadow:0 0 25px rgba(255,136,0,0.8);
+}
+#walletAddress {
+  margin-top:15px;
+  font-weight:bold;
+  font-size:18px;
+}
+
+/* Grid Cards */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
+  gap:25px;
+  margin-bottom:50px;
+}
+.card {
+  background:#1a1a1a;
+  padding:25px;
+  border-radius:16px;
+  box-shadow:0 0 20px rgba(255,111,0,0.2);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.card h2 {
+  margin-top:0;
+  margin-bottom:15px;
+  color:#ff6f00;
+  text-shadow:0 0 6px #ff6f00;
+}
+.card button {
+  background: linear-gradient(45deg,#ff6f00,#ff8800);
+  color:#fff;
+  border:none;
+  padding:8px 20px;
+  margin-top:10px;
+  border-radius:10px;
+  cursor:pointer;
+  transition: transform 0.2s, box-shadow 0.3s;
+  box-shadow:0 0 10px rgba(255,111,0,0.5);
+}
+.card button:hover {
+  transform:scale(1.05);
+  box-shadow:0 0 25px rgba(255,136,0,0.7);
+}
+.card:hover {
+  transform:translateY(-5px);
+  box-shadow:0 0 30px rgba(255,111,0,0.4);
+}
+
+/* Table */
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+th,td {
+  border:1px solid #333;
+  padding:10px;
+  text-align:center;
+}
+th { background:#222; }
+
+/* Channels */
+.channels {
+  text-align:center;
+  margin-top:30px;
+}
+.channels a {
+  display:inline-block;
+  margin:5px 15px;
+  padding:12px 24px;
+  background: linear-gradient(45deg,#ff6f00,#ff8800);
+  color:#fff;
+  border-radius:12px;
+  font-weight:bold;
+  box-shadow:0 0 15px rgba(255,111,0,0.5);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.channels a:hover {
+  transform: scale(1.05);
+  box-shadow:0 0 25px rgba(255,136,0,0.8);
+}
+
+/* Footer */
+footer {
+  margin-top:50px;
+  font-size:14px;
+  opacity:0.8;
+  text-align:center;
+}
+
+/* Responsive */
+@media(max-width:600px){
+  header { flex-direction:column; gap:15px; }
+  h1 { font-size:38px; }
+}
+</style>
 </head>
-<body>
-  <header>
-    <h1>🔥 Monad Pulse Dashboard</h1>
-    <button onclick="connectWallet()">Connect Wallet</button>
-    <p id="walletAddress"></p>
-  </header>
+<body class="fade-in">
 
-  <div class="grid">
-    <div class="card">
-      <h2>Wallet Tracker</h2>
-      <p>Balance: <span id="walletBalance">-</span> MON</p>
-    </div>
+<!-- Particle Canvas -->
+<canvas id="particles"></canvas>
 
-    <div class="card">
-      <h2>Gas Fee Visualizer</h2>
-      <button onclick="fetchGas()">Refresh Gas</button>
-      <p id="gasInfo">-</p>
-    </div>
+<!-- Header Logos -->
+<header>
+  <a href="https://x.com/pawansatoshix" target="_blank">
+    <img src="path/to/your-logo.png" alt="Pawan Logo">
+  </a>
+  <a href="https://monad.xyz" target="_blank">
+    <img src="path/to/monad-logo.png" alt="Monad Logo">
+  </a>
+</header>
 
-    <div class="card">
-      <h2>Tx Speed Stopwatch</h2>
-      <button onclick="sendTx()">Send Test Tx</button>
-      <p id="txStatus">-</p>
-    </div>
+<!-- Headline -->
+<h1 class="fade-in">🔥 Monad Pulse 🦊</h1>
+
+<!-- Wallet Section -->
+<div class="wallet-section fade-in">
+  <button onclick="connectWallet()">Connect Wallet</button>
+  <p id="walletAddress"></p>
+</div>
+
+<!-- Grid Cards -->
+<div class="grid fade-in">
+  <div class="card">
+    <h2>Wallet Tracker</h2>
+    <p>Balance: <span id="walletBalance">-</span> MON</p>
+    <p>Tx Count: <span id="txCount">-</span></p>
   </div>
 
-  <footer>
-    Built with ❤️ on Monad Testnet 🦊
-  </footer>
+  <div class="card">
+    <h2>Gas Fee Visualizer</h2>
+    <button onclick="fetchGas()">Refresh Gas</button>
+    <p id="gasInfo">-</p>
+  </div>
 
-  <script>
-    let account;
-    const provider = window.ethereum;
-    const rpcUrl = "https://testnet-rpc.monad.xyz"; // Example RPC endpoint
+  <div class="card">
+    <h2>Tx Speed Stopwatch</h2>
+    <button onclick="sendTx()">Send Test Tx</button>
+    <p id="txStatus">-</p>
+  </div>
+</div>
 
-    async function connectWallet() {
-      if (!provider) {
-        alert("MetaMask not detected!");
-        return;
-      }
-      const accounts = await provider.request({ method: "eth_requestAccounts" });
-      account = accounts[0];
-      document.getElementById("walletAddress").innerText = "Connected: " + account;
-      fetchBalance();
-    }
+<!-- Leaderboard -->
+<div class="card fade-in">
+  <h2>Leaderboard (Demo)</h2>
+  <table>
+    <tr><th>Rank</th><th>Wallet</th><th>Tx Count</th></tr>
+    <tr><td>1</td><td>0xYourWallet...</td><td id="leaderTx">-</td></tr>
+    <tr><td>2</td><td>0xFriend123...</td><td>42</td></tr>
+    <tr><td>3</td><td>0xDemo456...</td><td>27</td></tr>
+  </table>
+</div>
 
-    async function fetchBalance() {
-      if (!account) return;
-      const balanceHex = await provider.request({
-        method: "eth_getBalance",
-        params: [account, "latest"]
-      });
-      const balance = parseInt(balanceHex, 16) / 1e18;
-      document.getElementById("walletBalance").innerText = balance.toFixed(4);
-    }
+<!-- Channels -->
+<div class="channels fade-in">
+  <a href="https://t.me/pawansatoshiji" target="_blank">Telegram</a>
+  <a href="https://youtube.com/@PawanSatoshi" target="_blank">YouTube</a>
+  <a href="https://x.com/pawansatoshix" target="_blank">X / Twitter</a>
+</div>
 
-    async function fetchGas() {
-      const gas = await provider.request({ method: "eth_gasPrice", params: [] });
-      document.getElementById("gasInfo").innerText =
-        "Gas Price: " + parseInt(gas, 16) / 1e9 + " Gwei";
-    }
+<!-- Footer -->
+<footer class="fade-in">Built with ❤️ on Monad Testnet | Contact: @pawansatoshi</footer>
 
-    async function sendTx() {
-      if (!account) {
-        alert("Connect wallet first!");
-        return;
-      }
-      try {
-        const tx = await provider.request({
-          method: "eth_sendTransaction",
-          params: [
-            {
-              from: account,
-              to: account,
-              value: "0x0"
-            }
-          ]
-        });
-        document.getElementById("txStatus").innerText = "Tx Sent: " + tx;
-      } catch (err) {
-        document.getElementById("txStatus").innerText = "Error: " + err.message;
-      }
-    }
-  </script>
-</body>
-</html>
+<!-- JavaScript -->
+<script>
+let account;
+const provider = window.ethereum;
+
+async function connectWallet(){
+  if(!provider){alert("MetaMask not detected!"); return;}
+  const accounts = await provider.request({ method:"eth_requestAccounts" });
+  account = accounts[0];
+  document.getElementById("walletAddress").innerText="Connected: "+account;
+  fetchBalance();
+  fetchTxCount();
+}
+
+async function fetchBalance(){
+  if(!account) return;
+  const balanceHex = await provider.request({ method:"eth_getBalance", params:[account,"latest"]});
+  const balance = parseInt(balanceHex,16)/1e18;
+  document.getElementById("walletBalance").innerText=balance.toFixed(4);
+}
+
+async function fetchTxCount(){
+  if(!account) return;
+  const txCountHex = await provider.request({ method:"eth_getTransactionCount", params:[account,"latest"]});
+  const txCount = parseInt(txCountHex,16);
+  document.getElementById("txCount").innerText=txCount;
+  document.getElementById("leaderTx").innerText=txCount;
+}
+
+async function fetchGas(){
+  const gas = await provider.request({ method:"eth_gasPrice
