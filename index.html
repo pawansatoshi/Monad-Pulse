@@ -171,25 +171,43 @@ footer { margin-top:50px; font-size:14px; opacity:0.8; text-align:center;}
 
 <script>
 let account;
-const provider = window.ethereum;
-const REFRESH_INTERVAL = 15000; // 15 sec
 let refreshTimer;
 let lastTxs = [];
 
+const provider = window.ethereum;
+
 async function connectWallet() {
-  if(!provider){ alert("MetaMask not detected!"); return; }
-  const accounts = await provider.request({ method:"eth_requestAccounts" });
-  account = accounts[0];
-  document.getElementById("walletAddress").innerText = "Connected: " + account;
+  try {
+    if(!provider) { alert("MetaMask not detected!"); return; }
+    const accounts = await provider.request({ method: "eth_requestAccounts" });
+    if(accounts.length === 0) { alert("No account found in MetaMask!"); return; }
+    account = accounts[0];
+    document.getElementById("walletAddress").innerText = "Connected: " + account;
 
-  await fetchWalletData(account);
-  await fetchGasData();
-
-  if(refreshTimer) clearInterval(refreshTimer);
-  refreshTimer = setInterval(async ()=>{
     await fetchWalletData(account);
     await fetchGasData();
-  }, REFRESH_INTERVAL);
+
+    if(refreshTimer) clearInterval(refreshTimer);
+    refreshTimer = setInterval(async ()=>{
+      await fetchWalletData(account);
+      await fetchGasData();
+    }, 15000);
+
+    provider.on("accountsChanged", (accounts)=>{
+      if(accounts.length === 0) {
+        account = null;
+        document.getElementById("walletAddress").innerText = "-";
+      } else {
+        account = accounts[0];
+        document.getElementById("walletAddress").innerText = "Connected: " + account;
+        fetchWalletData(account);
+      }
+    });
+
+  } catch(err){
+    console.error(err);
+    alert("Error connecting wallet: " + err.message);
+  }
 }
 
 async function fetchWalletData(address){
@@ -198,10 +216,9 @@ async function fetchWalletData(address){
     const data = await res.json();
 
     document.getElementById("walletBalance").innerText = "Balance: " + (data.balance/1e18).toFixed(4) + " MON";
-    document.getElementById("txCount").innerText = data.txCount;
+    document.getElementById("txCount").innerText = "Tx Count: " + data.txCount;
     document.getElementById("leaderTx").innerText = data.txCount;
 
-    // Show last 5 transactions with highlight for new ones
     const recentTxs = data.transactions.slice(0,5);
     let txHTML = "";
     recentTxs.forEach(tx=>{
@@ -209,4 +226,19 @@ async function fetchWalletData(address){
       if(isNew) txHTML += `<li class="tx-new">${tx.hash} → ${(tx.value/1e18).toFixed(4)} MON</li>`;
       else txHTML += `<li>${tx.hash} → ${(tx.value/1e18).toFixed(4)} MON</li>`;
     });
-    document.getElementById("recentTxs").innerHTML = `<ul>${txHTML}</ul
+    document.getElementById("recentTxs").innerHTML = `<ul>${txHTML}</ul>`;
+    lastTxs = recentTxs.map(tx=>tx.hash);
+
+  } catch(err){ console.error(err); }
+}
+
+async function fetchGasData(){
+  try{
+    const res = await fetch(`https://testnet.monadexplorer.com/api/gas`);
+    const data = await res.json();
+    document.getElementById("gasInfo").innerText = (parseInt(data.gasPrice)/1e9).toFixed(1) + " Gwei";
+  } catch(err){ console.error(err); }
+}
+</script>
+</body>
+  </html>
