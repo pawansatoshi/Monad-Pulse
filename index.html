@@ -154,6 +154,7 @@ th { background:#222; }
   font-weight:bold;
   box-shadow:0 0 15px rgba(255,111,0,0.5);
   transition: transform 0.3s, box-shadow 0.3s;
+  text-decoration: none;
 }
 .channels a:hover {
   transform: scale(1.05);
@@ -187,6 +188,9 @@ footer {
   </a>
   <a href="https://monad.xyz" target="_blank">
     <img src="path/to/monad-logo.png" alt="Monad Logo">
+  </a>
+  <a href="path/to/fox-logo.png" target="_blank">
+    <img src="path/to/fox-logo.png" alt="Fox Logo">
   </a>
 </header>
 
@@ -236,6 +240,7 @@ footer {
   <a href="https://t.me/pawansatoshiji" target="_blank">Telegram</a>
   <a href="https://youtube.com/@PawanSatoshi" target="_blank">YouTube</a>
   <a href="https://x.com/pawansatoshix" target="_blank">X / Twitter</a>
+  <a href="https://discord.gg/monad" target="_blank">@pawansatoshi<br>(Discord)</a>
 </div>
 
 <!-- Footer -->
@@ -271,4 +276,9 @@ async function fetchTxCount(){
 }
 
 async function fetchGas(){
-  const gas = await provider.request({ method:"eth_gasPrice
+  const gas = await provider.request({ method:"eth_gasPrice" });
+  document.getElementById("gasInfo").innerText = (parseInt(gas,16)/1e9).toFixed(1)+" Gwei";
+}
+</script>
+</body>
+  </html>
