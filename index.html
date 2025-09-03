@@ -7,40 +7,40 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
 body {
-  margin: 0;
-  font-family: 'Inter', sans-serif;
-  background-color: #0d0d0d;
-  color: #fff;
-  overflow-x: hidden;
+  margin:0;
+  font-family:'Inter',sans-serif;
+  background-color:#0d0d0d;
+  color:#fff;
+  overflow-x:hidden;
 }
 header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 40px 20px;
-  flex-wrap: wrap;
-  gap: 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:40px 20px;
+  flex-wrap:wrap;
+  gap:20px;
 }
 header img {
-  height: 70px;
-  border-radius: 12px;
-  filter: drop-shadow(0 0 10px #836EF9);
-  transition: 0.3s;
+  height:70px;
+  border-radius:12px;
+  filter:drop-shadow(0 0 10px #836EF9);
+  transition:0.3s;
 }
-header img:hover {
-  transform: scale(1.15) rotate(-2deg);
-  filter: drop-shadow(0 0 20px #A0055D);
+header img:hover{
+  transform:scale(1.15) rotate(-2deg);
+  filter:drop-shadow(0 0 20px #A0055D);
 }
 h1 {
-  text-align: center;
-  color: #836EF9;
-  font-size: 52px;
-  margin-bottom: 50px;
-  text-shadow: 0 0 15px #A0055D;
+  text-align:center;
+  color:#836EF9;
+  font-size:52px;
+  margin-bottom:50px;
+  text-shadow:0 0 15px #A0055D;
 }
-.wallet-section { text-align:center; margin-bottom:50px;}
-.wallet-section button {
-  background: linear-gradient(45deg,#836EF9,#A0055D);
+.wallet-section { text-align:center; margin-bottom:30px;}
+.wallet-section button{
+  background:linear-gradient(45deg,#836EF9,#A0055D);
   color:#fff;
   border:none;
   padding:12px 28px;
@@ -49,12 +49,14 @@ h1 {
   font-size:18px;
   box-shadow:0 0 15px rgba(131,110,249,0.6);
   transition:0.3s;
+  margin-right:10px;
 }
-.wallet-section button:hover {
-  transform: scale(1.05);
+.wallet-section button:hover{
+  transform:scale(1.05);
   box-shadow:0 0 25px rgba(160,5,93,0.8);
 }
 #walletAddress { margin-top:15px; font-weight:bold; font-size:18px;}
+#manualWallet { padding:8px; border-radius:8px; border:none; width:250px; font-size:16px;}
 .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:25px; margin-bottom:50px;}
 .card {
   background:#1a1a1a;
@@ -69,7 +71,7 @@ h1 {
   margin-top:0;
   margin-bottom:15px;
 }
-.card button {
+.card button{
   background:linear-gradient(45deg,#836EF9,#A0055D);
   color:#fff;
   border:none;
@@ -79,11 +81,11 @@ h1 {
   box-shadow:0 0 10px rgba(131,110,249,0.5);
   transition:0.3s;
 }
-.card button:hover {
+.card button:hover{
   transform:scale(1.05);
   box-shadow:0 0 25px rgba(160,5,93,0.7);
 }
-.card:hover {
+.card:hover{
   transform:translateY(-5px);
   box-shadow:0 0 30px rgba(131,110,249,0.4);
 }
@@ -103,17 +105,12 @@ th { background:#222;}
   transition:0.3s;
   text-decoration:none;
 }
-.channels a:hover {
+.channels a:hover{
   transform:scale(1.05);
   box-shadow:0 0 25px rgba(160,5,93,0.8);
 }
 footer { margin-top:50px; font-size:14px; opacity:0.8; text-align:center;}
-
-/* New transaction highlight animation */
-@keyframes txHighlight {
-  0% { background-color: #836EF9; color: #fff; }
-  100% { background-color: #1a1a1a; color: #fff; }
-}
+@keyframes txHighlight { 0% {background-color:#836EF9;color:#fff;} 100% {background-color:#1a1a1a;color:#fff;} }
 .tx-new { animation: txHighlight 2s ease; }
 </style>
 </head>
@@ -128,6 +125,8 @@ footer { margin-top:50px; font-size:14px; opacity:0.8; text-align:center;}
 
 <div class="wallet-section">
   <button onclick="connectWallet()">Connect Wallet</button>
+  <input type="text" id="manualWallet" placeholder="Enter wallet address"/>
+  <button onclick="fetchManualWallet()">Search Wallet</button>
   <p id="walletAddress">-</p>
 </div>
 
@@ -172,73 +171,52 @@ footer { margin-top:50px; font-size:14px; opacity:0.8; text-align:center;}
 <script>
 let account;
 let refreshTimer;
-let lastTxs = [];
-
+let lastTxs=[];
+const BLOCKVISION_API_KEY="YOUR_BLOCKVISION_FREE_API_KEY"; // Replace with your free API key
 const provider = window.ethereum;
 
-async function connectWallet() {
-  try {
-    if(!provider) { alert("MetaMask not detected!"); return; }
-    const accounts = await provider.request({ method: "eth_requestAccounts" });
-    if(accounts.length === 0) { alert("No account found in MetaMask!"); return; }
+async function connectWallet(){
+  try{
+    if(!provider){ alert("MetaMask not detected!"); return; }
+    const accounts = await provider.request({ method:"eth_requestAccounts" });
+    if(accounts.length===0){ alert("No account found in MetaMask!"); return; }
     account = accounts[0];
-    document.getElementById("walletAddress").innerText = "Connected: " + account;
-
+    document.getElementById("walletAddress").innerText="Connected: "+account;
     await fetchWalletData(account);
-    await fetchGasData();
-
-    if(refreshTimer) clearInterval(refreshTimer);
-    refreshTimer = setInterval(async ()=>{
-      await fetchWalletData(account);
-      await fetchGasData();
-    }, 15000);
-
-    provider.on("accountsChanged", (accounts)=>{
-      if(accounts.length === 0) {
-        account = null;
-        document.getElementById("walletAddress").innerText = "-";
-      } else {
-        account = accounts[0];
-        document.getElementById("walletAddress").innerText = "Connected: " + account;
-        fetchWalletData(account);
-      }
+    startAutoRefresh(account);
+    provider.on("accountsChanged",(accounts)=>{
+      if(accounts.length===0){ account=null; document.getElementById("walletAddress").innerText="-"; }
+      else { account=accounts[0]; document.getElementById("walletAddress").innerText="Connected: "+account; fetchWalletData(account); }
     });
+  }catch(err){ console.error(err); alert("Error connecting wallet: "+err.message); }
+}
 
-  } catch(err){
-    console.error(err);
-    alert("Error connecting wallet: " + err.message);
-  }
+async function fetchManualWallet(){
+  const manualAddress=document.getElementById("manualWallet").value.trim();
+  if(!manualAddress){ alert("Enter a valid wallet address!"); return; }
+  account=manualAddress;
+  document.getElementById("walletAddress").innerText="Manual: "+account;
+  await fetchWalletData(account);
+  startAutoRefresh(account);
+}
+
+function startAutoRefresh(addr){
+  if(refreshTimer) clearInterval(refreshTimer);
+  refreshTimer=setInterval(async()=>{ await fetchWalletData(addr); await fetchGasData(); },15000);
 }
 
 async function fetchWalletData(address){
   try{
-    const res = await fetch(`https://testnet.monadexplorer.com/api/account/${address}`);
-    const data = await res.json();
+    const res=await fetch(`https://api.blockvision.org/monad/account/${address}?apiKey=${BLOCKVISION_API_KEY}`);
+    const data=await res.json();
+    document.getElementById("walletBalance").innerText="Balance: "+(data.balance/1e18).toFixed(4)+" MON";
+    document.getElementById("txCount").innerText="Tx Count: "+data.txCount;
+    document.getElementById("leaderTx").innerText=data.txCount;
 
-    document.getElementById("walletBalance").innerText = "Balance: " + (data.balance/1e18).toFixed(4) + " MON";
-    document.getElementById("txCount").innerText = "Tx Count: " + data.txCount;
-    document.getElementById("leaderTx").innerText = data.txCount;
-
-    const recentTxs = data.transactions.slice(0,5);
-    let txHTML = "";
+    const recentTxs=data.transactions.slice(0,5);
+    let txHTML="";
     recentTxs.forEach(tx=>{
-      let isNew = !lastTxs.includes(tx.hash);
-      if(isNew) txHTML += `<li class="tx-new">${tx.hash} → ${(tx.value/1e18).toFixed(4)} MON</li>`;
-      else txHTML += `<li>${tx.hash} → ${(tx.value/1e18).toFixed(4)} MON</li>`;
+      let isNew=!lastTxs.includes(tx.hash);
+      txHTML+=`<li${isNew?' class="tx-new"':''}>${tx.hash} → ${(tx.value/1e18).toFixed(4)} MON</li>`;
     });
-    document.getElementById("recentTxs").innerHTML = `<ul>${txHTML}</ul>`;
-    lastTxs = recentTxs.map(tx=>tx.hash);
-
-  } catch(err){ console.error(err); }
-}
-
-async function fetchGasData(){
-  try{
-    const res = await fetch(`https://testnet.monadexplorer.com/api/gas`);
-    const data = await res.json();
-    document.getElementById("gasInfo").innerText = (parseInt(data.gasPrice)/1e9).toFixed(1) + " Gwei";
-  } catch(err){ console.error(err); }
-}
-</script>
-</body>
-  </html>
+    document.getElementById("recentTxs").innerHTML
